@@ -171,11 +171,6 @@ filtered_df = filter_data(df)
 
 @st.cache_resource
 def load_model():
-    """Загружает обученную модель и метрики из data/model_weights.mw.
-
-    Файл формируется отдельным скриптом model.py (запустите его один раз
-    перед первым запуском приложения: python model.py).
-    """
     weights_path = DATA_DIR / "model_weights.mw"
     if not weights_path.exists():
         st.error(

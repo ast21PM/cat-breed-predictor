@@ -1,13 +1,3 @@
-"""
-model.py — обучение модели прогнозирования породы кошки и сохранение весов.
-
-Запуск:
-    python model.py
-
-На экран выводится точность модели, а в папку data/ сохраняется файл
-весовых коэффициентов model_weights.mw, который использует приложение app.py.
-"""
-
 import pickle
 from pathlib import Path
 
@@ -23,7 +13,6 @@ SCRIPT_DIR = Path(__file__).parent.absolute()
 DATA_DIR = SCRIPT_DIR / "data"
 WEIGHTS_PATH = DATA_DIR / "model_weights.mw"
 
-# Признаки, которые подаются в модель (должны совпадать с формой в app.py)
 NUMERIC_COLS = [
     "Age_in_years", "Weight", "Body_length",
     "Sleep_time_hours", "Owner_play_time_minutes",
@@ -35,10 +24,8 @@ TARGET_COL = "Breed"
 
 
 def load_dataset():
-    """Читает очищенный датасет и приводит признаки к числовому виду."""
     df = pd.read_csv(DATA_DIR / "cat_breeds_clean.csv", sep=";")
 
-    # Бинарные признаки -> 0/1 в том же представлении, что и форма в app.py
     df["Gender"] = df["Gender"].map({"female": 1, "male": 0})
     df["Neutered_or_spayed"] = df["Neutered_or_spayed"].astype(str).str.upper().map(
         {"TRUE": 1, "FALSE": 0}
@@ -47,12 +34,8 @@ def load_dataset():
         {"TRUE": 1, "FALSE": 0}
     )
 
-    # Категориальные признаки оставляем в исходном (английском) виде —
-    # app.py перед предсказанием приводит выбор пользователя к этим же значениям.
     for col in CATEGORICAL_COLS:
         df[col] = df[col].fillna("unknown")
-
-    # Заполняем возможные пропуски в бинарных/числовых признаках
     for col in BINARY_COLS:
         df[col] = df[col].fillna(0).astype(int)
     for col in NUMERIC_COLS:
@@ -64,7 +47,6 @@ def load_dataset():
 
 
 def build_pipeline():
-    """Пайплайн: one-hot кодирование категорий + случайный лес."""
     preprocessor = ColumnTransformer(
         transformers=[
             ("cat", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_COLS)
@@ -95,7 +77,6 @@ def main():
     conf_matrix = confusion_matrix(y_test, y_pred, labels=labels)
     class_report = classification_report(y_test, y_pred, output_dict=True)
 
-    # Сохраняем модель вместе с метриками, чтобы app.py не переобучал её
     bundle = {
         "pipeline": pipeline,
         "accuracy": accuracy,
